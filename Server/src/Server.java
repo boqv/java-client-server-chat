@@ -10,6 +10,14 @@ public class Server {
 	
 	private List<SocketThread> socketList;
 	
+	public List<SocketThread> getSocketList() {
+		return socketList;
+	}
+
+	public void setSocketList(List<SocketThread> socketList) {
+		this.socketList = socketList;
+	}
+
 	public Server() {
 		socketList = new ArrayList<SocketThread>();
 	}

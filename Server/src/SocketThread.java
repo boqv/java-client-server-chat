@@ -1,10 +1,7 @@
-import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 import Message.Message;
@@ -21,6 +18,10 @@ public class SocketThread extends Thread {
 		this.id = id;
 		this.server = server;
 	}
+	
+	public int getUserId() {
+		return this.id;
+	}
 
 	@Override
 	public void run() {
@@ -33,6 +34,15 @@ public class SocketThread extends Thread {
 			Message newMessage = null;
 
 			send(new Message("welcome", "Welcome, user: " + id, id));
+			
+			for(SocketThread socketThread : server.getSocketList()) {
+				int uid = socketThread.getUserId();
+				if(uid == id) continue;
+				System.out.println("sent id: " + uid + "\n");
+				send(new Message ("giveId", "", uid));
+			}
+			
+			server.broadcast(new Message("giveId", "", id));
 
 			while (true) {
 				
@@ -49,6 +59,7 @@ public class SocketThread extends Thread {
 			}
 			
 			System.out.println("user: "+ id + " disconnected.");
+			server.broadcast(new Message("userLeft", "", this.id));
 			
 			socket.close();
 			oos.close();
@@ -75,6 +86,7 @@ public class SocketThread extends Thread {
 				server.broadcast(message);
 				break;
 			}
+			
 		}
 		
 	}
