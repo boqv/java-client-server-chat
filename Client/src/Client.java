@@ -2,24 +2,21 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.ListModel;
 
 import Message.Message;
 
@@ -33,7 +30,10 @@ public class Client {
 	private int id;
 	
 	private JTextArea textArea;
+	private JList <User> userListView;
 	private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+	
+	private DefaultListModel<User> userList;
 
 	public static void main(String[] args) {
 
@@ -55,6 +55,8 @@ public class Client {
 	}
 
 	public void start() {
+		
+		userList = new DefaultListModel<User>();
 
 		JFrame frame = new JFrame();
 
@@ -77,16 +79,21 @@ public class Client {
 			}
 
 		});
-
+		
 		textArea = new JTextArea("");
 		textArea.setEditable(false);
-		textArea.setColumns(40);
-		textArea.setRows(24);
+
+		textArea.setPreferredSize(new Dimension(460, 240));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
-
+		
+		userListView = new JList<User>(userList);
+		userListView.setLayoutOrientation(JList.VERTICAL);
+		userListView.setPreferredSize(new Dimension(120, 240));
+	
 		JPanel panel = new JPanel();
-		panel.setPreferredSize(new Dimension(520, 480));
+		panel.setPreferredSize(new Dimension(640, 320));
+		panel.add(userListView);
 		panel.add(textArea);
 		panel.add(textField);
 		panel.add(button);
@@ -116,7 +123,6 @@ public class Client {
 			oos = new ObjectOutputStream(socket.getOutputStream());
 
 			connected = true;
-			String lineInput = "";
 			System.out.println("we are in.");
 
 			ListenThread listen = new ListenThread(this, socket);
@@ -172,6 +178,21 @@ public class Client {
 			case "msg": {
 				textArea.append("("+ now.format(timeFormatter) + ") ID "+ id + ": "+ content + "\n");
 				break;
+			}
+			case "giveId" : {
+				User user = new User(id, "");
+				userList.addElement(user);
+				break;
+			}
+			case "userLeft" : {
+				for(Object obj : userList.toArray()) {
+					User user = (User) obj;
+					if (user.getId() == message.getId()) {
+						userList.removeElement(user);
+					}
+				}
+				
+				//userList.rem
 			}
 		}
 		

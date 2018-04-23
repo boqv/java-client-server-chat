@@ -59,12 +59,14 @@ public class SocketThread extends Thread {
 			}
 			
 			System.out.println("user: "+ id + " disconnected.");
+			server.removeSocketThread(this);
+			
 			server.broadcast(new Message("userLeft", "", this.id));
+			
 			
 			socket.close();
 			oos.close();
 			ois.close();
-			//in.close();
 			
 			server.removeSocketThread(this);
 		} catch (IOException e) {
